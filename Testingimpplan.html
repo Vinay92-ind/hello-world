@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FHIR DATA ENGINEERING TEAM IMPLEMENTATION PLAN</title>
+    <style>
+        /* Base styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        /* Header styles */
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        /* Section styles */
+        .section {
+            margin-bottom: 40px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .section-title {
+            font-size: 22px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #3498db;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-title::before {
+            content: '';
+            display: inline-block;
+            width: 5px;
+            height: 25px;
+            background: #3498db;
+            margin-right: 15px;
+        }
+        
+        /* Button group styles */
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #229954;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3);
+        }
+        
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background: #e67e22;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(243, 156, 18, 0.3);
+        }
+        
+        /* Table styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        th {
+            background: #34495e;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 14px;
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        /* Editable field styles */
+        .editable {
+            background: #fff3cd;
+            min-height: 30px;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ffeaa7;
+            transition: all 0.3s ease;
+        }
+        
+        .editable:focus {
+            background: #ffeaa7;
+            outline: none;
+            border-color: #fdcb6e;
+        }
+        
+        input[type="text"], input[type="date"], select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        input[type="text"]:focus, input[type="date"]:focus, select:focus, textarea:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        
+        select {
+            cursor: pointer;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        /* Form layout */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .resource-selector {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #90caf9;
+        }
+        
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+        
+        .checkbox-container input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        /* Status badges (not directly used in this version but kept for consistency) */
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-pending {
+            background: #ffeaa7;
+            color: #fdcb6e;
+        }
+        
+        .status-completed {
+            background: #55efc4;
+            color: #00b894;
+        }
+        
+        .status-failed {
+            background: #fab1a0;
+            color: #e17055;
+        }
+        
+        /* Add/Remove row buttons */
+        .add-row-btn {
+            background: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .add-row-btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .remove-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .remove-btn:hover {
+            background: #c0392b;
+        }
+        
+        /* Instructions section */
+        .instructions {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            color: #0c5460;
+        }
+        
+        .instructions h3 {
+            margin-bottom: 10px;
+            color: #0c5460;
+        }
+        
+        .instructions ul {
+            margin-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 5px;
+        }
+        
+        /* Print styles */
+        @media print {
+            .button-group, .instructions, .add-row-btn, .remove-btn, .modal-overlay {
+                display: none; /* Hide interactive elements when printing */
+            }
+            
+            body {
+                background: white;
+            }
+            
+            .container {
+                box-shadow: none;
+            }
+
+            /* Remove yellow highlight for printing */
+            .editable {
+                background-color: transparent !important;
+                border: 1px solid #ccc !important;
+            }
+
+            /* Ensure input values are visible */
+            input[type="text"], input[type="date"], select, textarea {
+                border: 1px solid #ccc;
+            }
+        }
+        
+        /* Icon styling */
+        .icon {
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        /* Modal specific styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            visibility: hidden; /* Hidden by default */
+            opacity: 0; /* Fade in/out */
+            transition: visibility 0s, opacity 0.3s ease-in-out;
+        }
+
+        .modal-overlay.show {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            transform: translateY(-20px); /* Slide in effect */
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .modal-overlay.show .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-content p {
+            font-size: 18px;
+            margin-bottom: 25px;
+            color: #333;
+        }
+
+        .modal-buttons button {
+            padding: 10px 20px;
+            margin: 0 8px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background 0.3s ease;
+        }
+
+        .modal-buttons .btn-ok {
+            background: #3498db;
+            color: white;
+        }
+        .modal-buttons .btn-ok:hover {
+            background: #2980b9;
+        }
+
+        .modal-buttons .btn-yes {
+            background: #27ae60;
+            color: white;
+        }
+        .modal-buttons .btn-yes:hover {
+            background: #229954;
+        }
+
+        .modal-buttons .btn-no {
+            background: #e74c3c;
+            color: white;
+        }
+        .modal-buttons .btn-no:hover {
+            background: #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>FHIR DATA ENGINEERING TEAM IMPLEMENTATION PLAN</h1>
+            <p>Comprehensive Change Tracking for FHIR Resources and Related Components</p>
+        </div>
+        
+        <div class="content">
+            <div class="button-group">
+                <button class="btn btn-success" onclick="exportToExcel()">
+                    <span class="icon">📊</span> Export to Excel
+                </button>
+                <button class="btn btn-primary" onclick="saveData()">
+                    <span class="icon">💾</span> Save Progress
+                </button>
+                <button class="btn btn-warning" onclick="printDocument()">
+                    <span class="icon">🖨️</span> Print Document
+                </button>
+            </div>
+            
+            <div class="instructions">
+                <h3>📋 Instructions</h3>
+                <ul>
+                    <li>Fill in all yellow-highlighted fields with relevant information</li>
+                    <li>Select the FHIR resource from the dropdown and specify sub-resources</li>
+                    <li>Document all changes including ETL code, Teradata DDL, and API modifications</li>
+                    <li>Include Git repository links for each change</li>
+                    <li>Complete all production checkpoints before deployment</li>
+                    <li>Ensure developer comments are comprehensive for future reference</li>
+                </ul>
+            </div>
+            
+            <div class="section">
+                <h2 class="section-title">Release Details</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Release ID/Version*</label>
+                        <input type="text" id="releaseId" class="editable" placeholder="e.g., REL-2024.1.0">
+                    </div>
+                    <div class="form-group">
+                        <label>Deployment Date*</label>
+                        <input type="date" id="deploymentDate" class="editable">
+                    </div>
+                    <div class="form-group">
+                        <label>Environment*</label>
+                        <select id="environment" class="editable">
+                            <option value="">Select Environment</option>
+                            <option value="Development">Development</option>
+                            <option value="QA">QA</option>
+                            <option value="UAT">UAT</option>
+                            <option value="Production">Production</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Release Manager</label>
+                        <input type="text" id="releaseManager" class="editable" placeholder="Enter release manager name">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2 class="section-title">FHIR Resource Selection</h2>
+                <div class="resource-selector">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Primary FHIR Resource*</label>
+                            <select id="fhirResource" class="editable" onchange="updateSubResources()">
+                                <option value="">Select FHIR Resource</option>
+                                <option value="Organization">Organization</option>
+                                <option value="Location">Location</option>
+                                <option value="Patient">Patient</option>
+                                <option value="Coverage">Coverage</option>
+                                <option value="Procedure">Procedure</option>
+                                <option value="Practitioner">Practitioner</option>
+                                <option value="PractitionerRole">PractitionerRole</option>
+                                <option value="Encounter">Encounter</option>
+                                <option value="Observation">Observation</option>
+                                <option value="Condition">Condition</option>
+                                <option value="AllergyIntolerance">AllergyIntolerance</option>
+                                <option value="CareTeam">CareTeam</option>
+                                <option value="Immunization">Immunization</option>
+                                <option value="Questionnaire">Questionnaire</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Sub-Resources (comma-separated)</label>
+                            <input type="text" id="subResources" class="editable" placeholder="e.g., Patient.address, Patient.contact">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2 class="section-title">Change Details</h2>
+                <table id="changeDetailsTable">
+                    <thead>
+                        <tr>
+                            <th width="40">#</th>
+                            <th width="120">Developer Name</th>
+                            <th width="100">Object Type</th>
+                            <th width="150">Object Name</th>
+                            <th width="100">Change Type</th>
+                            <th width="120">Column Name</th>
+                            <th>Change Description</th>
+                            <th width="150">Git Link</th>
+                            <th width="120">JIRA/Ticket ID</th>
+                            <th width="80">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="changeDetailsBody">
+                        <tr>
+                            <td>1</td>
+                            <td><input type="text" class="editable" placeholder="Developer name"></td>
+                            <td>
+                                <select class="editable">
+                                    <option value="">Select Type</option>
+                                    <option value="Table">Table</option>
+                                    <option value="View">View</option>
+                                    <option value="Macro">Macro</option>
+                                    <option value="Procedure">Procedure</option>
+                                    <option value="ETL Code">ETL Code</option>
+                                    <option value="API">API</option>
+                                    <option value="Function">Function</option>
+                                    <option value="Index">Index</option>
+                                </select>
+                            </td>
+                            <td><input type="text" class="editable" placeholder="Object name"></td>
+                            <td>
+                                <select class="editable">
+                                    <option value="">Select Change</option>
+                                    <option value="Create">Create</option>
+                                    <option value="Alter">Alter</option>
+                                    <option value="Drop">Drop</option>
+                                    <option value="Grant">Grant</option>
+                                    <option value="Revoke">Revoke</option>
+                                    <option value="Update">Update</option>
+                                    <option value="Insert">Insert</option>
+                                    <option value="Delete">Delete</option>
+                                </select>
+                            </td>
+                            <td><input type="text" class="editable" placeholder="If applicable"></td>
+                            <td><textarea class="editable" placeholder="Detailed change description"></textarea></td>
+                            <td><input type="text" class="editable" placeholder="Git repository link"></td>
+                            <td><input type="text" class="editable" placeholder="JIRA-1234"></td>
+                            <td><button class="remove-btn" onclick="removeRow(this)">Remove</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button class="add-row-btn" onclick="addChangeRow()">+ Add Change</button>
+            </div>
+            
+            <div class="section">
+                <h2 class="section-title">DDL/Code Changes</h2>
+                <div class="form-grid">
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label>DDL Script (if applicable)</label>
+                        <textarea class="editable" id="ddlScript" rows="6" placeholder="Paste your CREATE/ALTER/DROP statements here..."></textarea>
+                    </div>
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label>Rollback Script</label>
+                        <textarea class="editable" id="rollbackScript" rows="6" placeholder="Paste your rollback DDL statements here..."></textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2 class="section-title">Production Checkpoints</h2>
+                <table id="checkpointTable">
+                    <thead>
+                        <tr>
+                            <th width="50">✓</th>
+                            <th>Checkpoint</th>
+                            <th width="150">Status</th>
+                            <th width="200">Verified By</th>
+                            <th>Comments</th>
+                        </tr>
+                    </thead>
+                    <tbody id="checkpointBody">
+                        <tr>
+                            <td><input type="checkbox" class="checkpoint-checkbox"></td>
+                            <td>Code Review Completed</td>
+                            <td>
+                                <select class="editable checkpoint-status">
+                                    <option value="Pending">Pending</option>
+                                    <option value="Completed">Completed</option>
+                                    <option value="N/A">N/A</option>
+                                </select>
+                            </td>
+                            <td><input type="text" class="editable checkpoint-verified-by" placeholder="Reviewer name"></td>
+                            <td><input type="text" class="editable checkpoint-comments" placeholder="Additional notes"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox" class="checkpoint-checkbox"></td>
+                            <td>Unit Testing Completed</td>
+                            <td>
+                                <select class="editable checkpoint-status">
+                                    <option value="Pending">Pending</option>
+                                    <option value="Completed">Completed</option>
+                                    <option value="N/A">N/A</option>
+                                </select>
+                            </td>
+                            <td><input type="text" class="editable checkpoint-verified-by" placeholder="Tester name"></td>
+                            <td><input type="text" class="editable checkpoint-comments" placeholder="Test results"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox" class="checkpoint-checkbox"></td>
+                            <td>ETL Job Testing in Lower Environment</td>
+                            <td>
+                                <select class="editable checkpoint-status">
+                                    <option value="Pending">Pending</option>
+                                    <option value="Completed">Completed</option>
+                                    <option value="N/A">N/A</option>
+                                </select>
+                            </td>
+                            <td><input type="text" class="editable checkpoint-verified-by" placeholder="Tester name"></td>
+                            <td><input type="text" class="editable checkpoint-comments" placeholder="Job execution details"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox" class="checkpoint-checkbox"></td>
+                            <td>API Testing Completed</td>
+                            <td>
+                                <select class="editable checkpoint-status">
+                                    <option value="Pending">Pending</option>
+                                    <option value="Completed">Completed</option>
+                                    <option value="N/A">N/A</option>
+                                </select>
+                            </td>
+                            <td><input type="text" class="editable checkpoint-verified-by" placeholder="API tester name"></td>
+                            <td><input type="text" class="editable checkpoint-comments" placeholder="API test results"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox" class="checkpoint-checkbox"></td>
+                            <td>Data Validation Completed</td>
+                            <td>
+                                <select class="editable checkpoint-status">
+                                    <option value="Pending">Pending</option>
+                                    <option value="Completed">Completed</option>
+                                    <option value="N/A">N/A</option>
+                                </select>
+                            </td>
+                            <td><input type="text" class="editable checkpoint-verified-by" placeholder="Validator name"></td>
+                            <td><input type="text" class="editable checkpoint-comments" placeholder="Validation results"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox" class="checkpoint-checkbox"></td>
+                            <td>Backup Taken</td>
+                            <td>
+                                <select class="editable checkpoint-status">
+                                    <option value="Pending">Pending</option>
+                                    <option value="Completed">Completed</option>
+                                    <option value="N/A">N/A</option>
+                                </select>
+                            </td>
+                            <td><input type="text" class="editable checkpoint-verified-by" placeholder="DBA name"></td>
+                            <td><input type="text" class="editable checkpoint-comments" placeholder="Backup location"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox" class="checkpoint-checkbox"></td>
+                            <td>Security Review Passed</td>
+                            <td>
+                                <select class="editable checkpoint-status">
+                                    <option value="Pending">Pending</option>
+                                    <option value="Completed">Completed</option>
+                                    <option value="N/A">N/A</option>
+                                </select>
+                            </td>
+                            <td><input type="text" class="editable checkpoint-verified-by" placeholder="Security reviewer"></td>
+                            <td><input type="text" class="editable checkpoint-comments" placeholder="Security notes"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox" class="checkpoint-checkbox"></td>
+                            <td>Performance Testing Completed</td>
+                            <td>
+                                <select class="editable checkpoint-status">
+                                    <option value="Pending">Pending</option>
+                                    <option value="Completed">Completed</option>
+                                    <option value="N/A">N/A</option>
+                                </select>
+                            </td>
+                            <td><input type="text" class="editable checkpoint-verified-by" placeholder="Performance tester"></td>
+                            <td><input type="text" class="editable checkpoint-comments" placeholder="Performance metrics"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox" class="checkpoint-checkbox"></td>
+                            <td>Documentation Updated</td>
+                            <td>
+                                <select class="editable checkpoint-status">
+                                    <option value="Pending">Pending</option>
+                                    <option value="Completed">Completed</option>
+                                    <option value="N/A">N/A</option>
+                                </select>
+                            </td>
+                            <td><input type="text" class="editable checkpoint-verified-by" placeholder="Documentation owner"></td>
+                            <td><input type="text" class="editable checkpoint-comments" placeholder="Wiki/Confluence link"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox" class="checkpoint-checkbox"></td>
+                            <td>Deployment Plan Approved</td>
+                            <td>
+                                <select class="editable checkpoint-status">
+                                    <option value="Pending">Pending</option>
+                                    <option value="Completed">Completed</option>
+                                    <option value="N/A">N/A</option>
+                                </select>
+                            </td>
+                            <td><input type="text" class="editable checkpoint-verified-by" placeholder="Approver name"></td>
+                            <td><input type="text" class="editable checkpoint-comments" placeholder="Approval details"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="section">
+                <h2 class="section-title">Developer Comments</h2>
+                <div class="form-group">
+                    <label>Detailed Change Summary and Notes</label>
+                    <textarea class="editable" id="developerComments" rows="8" placeholder="Please provide comprehensive details about all changes made in this release, including:
+- Business justification for changes
+- Technical implementation details
+- Dependencies and impacts
+- Testing approach and results
+- Any known issues or limitations
+- Post-deployment validation steps
+- Rollback procedures if needed"></textarea>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2 class="section-title">Sign-off</h2>
+                <table id="signoffTable">
+                    <thead>
+                        <tr>
+                            <th width="200">Role</th>
+                            <th>Name</th>
+                            <th width="150">Date</th>
+                            <th>Signature/Approval</th>
+                        </tr>
+                    </thead>
+                    <tbody id="signoffBody">
+                        <tr>
+                            <td>Developer</td>
+                            <td><input type="text" class="editable signoff-name" placeholder="Developer name"></td>
+                            <td><input type="date" class="editable signoff-date"></td>
+                            <td><input type="text" class="editable signoff-signature" placeholder="Digital signature"></td>
+                        </tr>
+                        <tr>
+                            <td>Technical Lead</td>
+                            <td><input type="text" class="editable signoff-name" placeholder="Tech lead name"></td>
+                            <td><input type="date" class="editable signoff-date"></td>
+                            <td><input type="text" class="editable signoff-signature" placeholder="Digital signature"></td>
+                        </tr>
+                        <tr>
+                            <td>QA Lead</td>
+                            <td><input type="text" class="editable signoff-name" placeholder="QA lead name"></td>
+                            <td><input type="date" class="editable signoff-date"></td>
+                            <td><input type="text" class="editable signoff-signature" placeholder="Digital signature"></td>
+                        </tr>
+                        <tr>
+                            <td>Release Manager</td>
+                            <td><input type="text" class="editable signoff-name" placeholder="Release manager name"></td>
+                            <td><input type="date" class="editable signoff-date"></td>
+                            <td><input type="text" class="editable signoff-signature" placeholder="Digital signature"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="messageModal" class="modal-overlay">
+        <div class="modal-content">
+            <p id="modalMessage"></p>
+            <div class="modal-buttons">
+                <button class="btn-ok" id="modalOkBtn" style="display: none;">OK</button>
+                <button class="btn-yes" id="modalYesBtn" style="display: none;">Yes</button>
+                <button class="btn-no" id="modalNoBtn" style="display: none;">No</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let changeRowCount = 1;
+        let autoSaveInterval;
+
+        /**
+         * Displays a custom message modal, replacing browser's alert/confirm.
+         * @param {string} message - The message to display.
+         * @param {string} type - 'alert' for a single OK button, 'confirm' for Yes/No buttons.
+         * @param {Function} [onConfirmCallback] - Callback function for 'confirm' type, accepts a boolean (true for Yes, false for No).
+         */
+        function showMessage(message, type = 'alert', onConfirmCallback = null) {
+            const modal = document.getElementById('messageModal');
+            const modalMessage = document.getElementById('modalMessage');
+            const modalOkBtn = document.getElementById('modalOkBtn');
+            const modalYesBtn = document.getElementById('modalYesBtn');
+            const modalNoBtn = document.getElementById('modalNoBtn');
+
+            modalMessage.textContent = message;
+            
+            // Reset button display for fresh state
+            modalOkBtn.style.display = 'none';
+            modalYesBtn.style.display = 'none';
+            modalNoBtn.style.display = 'none';
+
+            // Set up buttons based on message type
+            if (type === 'alert') {
+                modalOkBtn.style.display = 'inline-block';
+                modalOkBtn.onclick = () => {
+                    modal.classList.remove('show'); // Hide modal on OK click
+                };
+            } else if (type === 'confirm') {
+                modalYesBtn.style.display = 'inline-block';
+                modalNoBtn.style.display = 'inline-block';
+                modalYesBtn.onclick = () => {
+                    modal.classList.remove('show'); // Hide modal on Yes click
+                    if (onConfirmCallback) onConfirmCallback(true); // Invoke callback with true
+                };
+                modalNoBtn.onclick = () => {
+                    modal.classList.remove('show'); // Hide modal on No click
+                    if (onConfirmCallback) onConfirmCallback(false); // Invoke callback with false
+                };
+            }
+
+            modal.classList.add('show'); // Display the modal
+        }
+
+        /**
+         * Adds a new row to the Change Details table.
+         */
+        function addChangeRow() {
+            changeRowCount++;
+            const tbody = document.getElementById('changeDetailsBody');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td>${changeRowCount}</td>
+                <td><input type="text" class="editable" placeholder="Developer name"></td>
+                <td>
+                    <select class="editable">
+                        <option value="">Select Type</option>
+                        <option value="Table">Table</option>
+                        <option value="View">View</option>
+                        <option value="Macro">Macro</option>
+                        <option value="Procedure">Procedure</option>
+                        <option value="ETL Code">ETL Code</option>
+                        <option value="API">API</option>
+                        <option value="Function">Function</option>
+                        <option value="Index">Index</option>
+                    </select>
+                </td>
+                <td><input type="text" class="editable" placeholder="Object name"></td>
+                <td>
+                    <select class="editable">
+                        <option value="">Select Change</option>
+                        <option value="Create">Create</option>
+                        <option value="Alter">Alter</option>
+                        <option value="Drop">Drop</option>
+                        <option value="Grant">Grant</option>
+                        <option value="Revoke">Revoke</option>
+                        <option value="Update">Update</option>
+                        <option value="Insert">Insert</option>
+                        <option value="Delete">Delete</option>
+                    </select>
+                </td>
+                <td><input type="text" class="editable" placeholder="If applicable"></td>
+                <td><textarea class="editable" placeholder="Detailed change description"></textarea></td>
+                <td><input type="text" class="editable" placeholder="Git repository link"></td>
+                <td><input type="text" class="editable" placeholder="JIRA-1234"></td>
+                <td><button class="remove-btn" onclick="removeRow(this)">Remove</button></td>
+            `;
+            tbody.appendChild(newRow);
+        }
+        
+        /**
+         * Removes a row from the Change Details table.
+         * @param {HTMLElement} button - The remove button element clicked.
+         */
+        function removeRow(button) {
+            const row = button.closest('tr');
+            row.remove();
+            updateRowNumbers(); // Update row numbers after removal
+        }
+        
+        /**
+         * Updates the row numbers in the Change Details table after rows are added or removed.
+         */
+        function updateRowNumbers() {
+            const rows = document.querySelectorAll('#changeDetailsBody tr');
+            rows.forEach((row, index) => {
+                row.cells[0].textContent = index + 1; // Set the first cell's text content to the new row number
+            });
+            changeRowCount = rows.length; // Update the global row count
+        }
+        
+        /**
+         * Updates the placeholder for sub-resources based on the selected FHIR resource.
+         */
+        function updateSubResources() {
+            const resource = document.getElementById('fhirResource').value;
+            const subResourcesInput = document.getElementById('subResources');
+            
+            // Define common sub-resource suggestions for various FHIR resources
+            const subResourceSuggestions = {
+                'Patient': 'Patient.name, Patient.address, Patient.contact, Patient.identifier, Patient.telecom',
+                'Organization': 'Organization.name, Organization.address, Organization.contact, Organization.identifier',
+                'Practitioner': 'Practitioner.name, Practitioner.address, Practitioner.qualification, Practitioner.identifier',
+                'Coverage': 'Coverage.payor, Coverage.class, Coverage.beneficiary, Coverage.relationship',
+                'Encounter': 'Encounter.class, Encounter.participant, Encounter.diagnosis, Encounter.location',
+                'Observation': 'Observation.code, Observation.value, Observation.component, Observation.interpretation',
+                'Procedure': 'Procedure.code, Procedure.performer, Procedure.bodySite, Procedure.outcome',
+                'Condition': 'Condition.code, Condition.severity, Condition.bodySite, Condition.stage',
+                'AllergyIntolerance': 'AllergyIntolerance.reaction, AllergyIntolerance.code, AllergyIntolerance.clinicalStatus',
+                'Immunization': 'Immunization.vaccineCode, Immunization.occurrence, Immunization.doseQuantity',
+                'CareTeam': 'CareTeam.participant, CareTeam.role, CareTeam.member, CareTeam.onBehalfOf',
+                'Location': 'Location.address, Location.position, Location.physicalType, Location.partOf',
+                'PractitionerRole': 'PractitionerRole.role, PractitionerRole.specialty, PractitionerRole.location',
+                'Questionnaire': 'Questionnaire.item, Questionnaire.code, Questionnaire.subjectType'
+            };
+            
+            // Set the placeholder text
+            if (subResourceSuggestions[resource]) {
+                subResourcesInput.placeholder = `e.g., ${subResourceSuggestions[resource]}`;
+            } else {
+                subResourcesInput.placeholder = "e.g., Patient.address, Patient.contact"; // Default placeholder
+            }
+        }
+        
+        /**
+         * Exports the current document content to an Excel-compatible HTML file.
+         */
+        function exportToExcel() {
+            // Create a temporary container to clone the content and extract current data
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = document.querySelector('.container').innerHTML; // Clone inner HTML to work on a copy
+
+            // Iterate over all original editable elements and update their values in the cloned content.
+            // This is crucial to ensure that the exported Excel file contains the user's current input.
+            const originalEditables = document.querySelectorAll('.editable');
+            const clonedEditables = tempDiv.querySelectorAll('.editable');
+
+            originalEditables.forEach((originalElem, index) => {
+                const clonedElem = clonedEditables[index];
+                if (clonedElem) { // Ensure the cloned element exists
+                    if (originalElem.tagName === 'INPUT' || originalElem.tagName === 'TEXTAREA') {
+                        clonedElem.value = originalElem.value;
+                        clonedElem.setAttribute('value', originalElem.value); // Set value attribute for better Excel compatibility
+                    } else if (originalElem.tagName === 'SELECT') {
+                        clonedElem.value = originalElem.value;
+                        // Ensure the 'selected' attribute is correctly set for the option in the cloned element
+                        Array.from(clonedElem.options).forEach(option => {
+                            if (option.value === originalElem.value) {
+                                option.setAttribute('selected', 'selected');
+                            } else {
+                                option.removeAttribute('selected');
+                            }
+                        });
+                    }
+                }
+            });
+
+            // Update checkpoint checkboxes in the cloned content to reflect their current checked state.
+            const originalCheckboxes = document.querySelectorAll('.checkpoint-checkbox');
+            const clonedCheckboxes = tempDiv.querySelectorAll('.checkpoint-checkbox');
+            originalCheckboxes.forEach((originalCheckbox, index) => {
+                if (clonedCheckboxes[index]) { // Ensure cloned checkbox exists
+                    if (originalCheckbox.checked) {
+                        clonedCheckboxes[index].setAttribute('checked', 'checked');
+                    } else {
+                        clonedCheckboxes[index].removeAttribute('checked');
+                    }
+                }
+            });
+
+            // Remove interactive elements (buttons, instructions) from the cloned content that shouldn't be in the Excel.
+            const buttons = tempDiv.querySelectorAll('.btn, .add-row-btn, .remove-btn');
+            buttons.forEach(btn => btn.remove());
+            
+            const instructions = tempDiv.querySelector('.instructions');
+            if (instructions) instructions.remove();
+            
+            // Construct the HTML string suitable for Excel export.
+            const html = `
+                <html xmlns:o="urn:schemas-microsoft-com:office:office" 
+                      xmlns:x="urn:schemas-microsoft-com:office:excel" 
+                      xmlns="http://www.w3.org/TR/REC-html40">
+                <head>
+                    <meta charset="utf-8">
+                    <style>
+                        table { border-collapse: collapse; width: 100%; }
+                        th { background-color: #34495e; color: white; font-weight: bold; padding: 10px; border: 1px solid black; }
+                        td { padding: 8px; border: 1px solid black; }
+                        /* Maintain original yellow highlight in Excel and ensure inputs are visible */
+                        .editable { background-color: #fff3cd !important; border: 1px solid #ffeaa7 !important; } 
+                        input[type="text"], input[type="date"], select, textarea { border: 1px solid #ddd; background: transparent; width: 100%; padding: 0; }
+                        .section-title { font-size: 18px; font-weight: bold; color: #2c3e50; margin: 20px 0 10px 0; }
+                        body { font-family: Arial, sans-serif; }
+                        h1 { color: #2c3e50; text-align: center; }
+                        p { font-size: 16px; text-align: center; } /* Add p styling for header p */
+                        .form-group label { font-weight: bold; }
+                    </style>
+                </head>
+                <body>
+                    ${tempDiv.innerHTML}
+                </body>
+                </html>
+            `;
+            
+            // Create a Blob from the HTML content and trigger a download.
+            const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            // Generate a dynamic filename based on resource and date
+            const date = new Date().toISOString().split('T')[0];
+            const resource = document.getElementById('fhirResource').value || 'General';
+            a.download = `FHIR_Implementation_Plan_${resource}_${date}.xls`;
+            document.body.appendChild(a);
+            a.click(); // Programmatically click the link to trigger download
+            document.body.removeChild(a); // Clean up the temporary link
+            URL.revokeObjectURL(url); // Release the object URL
+            
+            showMessage('Excel file has been generated and downloaded!', 'alert');
+        }
+        
+        /**
+         * Collects all current form data and saves it to localStorage.
+         */
+        function saveData() {
+            const formData = {
+                releaseId: document.getElementById('releaseId').value,
+                deploymentDate: document.getElementById('deploymentDate').value,
+                environment: document.getElementById('environment').value,
+                releaseManager: document.getElementById('releaseManager').value,
+                fhirResource: document.getElementById('fhirResource').value,
+                subResources: document.getElementById('subResources').value,
+                ddlScript: document.getElementById('ddlScript').value, // Save DDL Script
+                rollbackScript: document.getElementById('rollbackScript').value, // Save Rollback Script
+                developerComments: document.getElementById('developerComments').value, // Save Developer Comments
+                changeDetails: [],
+                checkpoints: [],
+                signoffs: [], 
+                timestamp: new Date().toISOString()
+            };
+            
+            // Collect data from the "Change Details" table
+            const changeRows = document.querySelectorAll('#changeDetailsBody tr');
+            changeRows.forEach(row => {
+                const inputs = row.querySelectorAll('input, select, textarea');
+                if (inputs.length >= 8) { // Ensure all expected input fields exist in the row
+                    formData.changeDetails.push({
+                        developer: inputs[0].value,
+                        objectType: inputs[1].value,
+                        objectName: inputs[2].value,
+                        changeType: inputs[3].value,
+                        columnName: inputs[4].value,
+                        description: inputs[5].value,
+                        gitLink: inputs[6].value,
+                        jiraId: inputs[7].value
+                    });
+                }
+            });
+
+            // Collect data from the "Production Checkpoints" table
+            const checkpointRows = document.querySelectorAll('#checkpointTable tbody tr');
+            checkpointRows.forEach(row => {
+                const checkbox = row.querySelector('.checkpoint-checkbox');
+                const checkpointName = row.cells[1].textContent.trim(); 
+                const statusSelect = row.querySelector('.checkpoint-status');
+                const verifiedByInput = row.querySelector('.checkpoint-verified-by');
+                const commentsInput = row.querySelector('.checkpoint-comments');
+
+                formData.checkpoints.push({
+                    name: checkpointName,
+                    checked: checkbox ? checkbox.checked : false, // Ensure checkbox existence check
+                    status: statusSelect ? statusSelect.value : '',
+                    verifiedBy: verifiedByInput ? verifiedByInput.value : '',
+                    comments: commentsInput ? commentsInput.value : ''
+                });
+            });
+
+            // Collect data from the "Sign-off" table
+            const signoffRows = document.querySelectorAll('#signoffTable tbody tr');
+            signoffRows.forEach(row => {
+                const role = row.cells[0].textContent.trim();
+                const nameInput = row.querySelector('.signoff-name');
+                const dateInput = row.querySelector('.signoff-date');
+                const signatureInput = row.querySelector('.signoff-signature');
+
+                formData.signoffs.push({
+                    role: role,
+                    name: nameInput ? nameInput.value : '',
+                    date: dateInput ? dateInput.value : '',
+                    signature: signatureInput ? signatureInput.value : ''
+                });
+            });
+
+            // Attempt to save data to localStorage. Use try-catch for robustness.
+            try {
+                localStorage.setItem('fhirImplementationPlan', JSON.stringify(formData));
+                showMessage('Progress saved successfully! Your data will be restored when you reload the page.', 'alert');
+            } catch (e) {
+                console.error("Error saving to localStorage:", e);
+                showMessage('Failed to save progress. Local storage might be full or inaccessible.', 'alert');
+            }
+        }
+        
+        /**
+         * Loads saved data from localStorage and populates the form fields.
+         */
+        function loadData() {
+            const savedData = localStorage.getItem('fhirImplementationPlan');
+            if (savedData) {
+                // Prompt user to confirm data restoration using the custom modal
+                showMessage('Previous saved data found. Would you like to restore it?', 'confirm', (response) => {
+                    if (response) {
+                        try {
+                            const data = JSON.parse(savedData);
+                            
+                            // Restore basic form fields
+                            document.getElementById('releaseId').value = data.releaseId || '';
+                            document.getElementById('deploymentDate').value = data.deploymentDate || '';
+                            document.getElementById('environment').value = data.environment || '';
+                            document.getElementById('releaseManager').value = data.releaseManager || '';
+                            document.getElementById('fhirResource').value = data.fhirResource || '';
+                            document.getElementById('subResources').value = data.subResources || '';
+                            document.getElementById('ddlScript').value = data.ddlScript || '';
+                            document.getElementById('rollbackScript').value = data.rollbackScript || '';
+                            document.getElementById('developerComments').value = data.developerComments || '';
+                            
+                            // Update sub-resource placeholder based on the loaded FHIR resource
+                            updateSubResources();
+
+                            // Restore "Change Details" table rows
+                            const changeDetailsBody = document.getElementById('changeDetailsBody');
+                            changeDetailsBody.innerHTML = ''; // Clear existing rows before loading
+                            if (data.changeDetails && Array.isArray(data.changeDetails)) {
+                                data.changeDetails.forEach((detail) => {
+                                    addChangeRow(); // Add a new row for each saved entry
+                                });
+                                // Populate the newly added rows with saved data
+                                const newChangeRows = document.querySelectorAll('#changeDetailsBody tr');
+                                data.changeDetails.forEach((detail, index) => {
+                                    const row = newChangeRows[index];
+                                    if (row) { // Ensure row exists
+                                        const inputs = row.querySelectorAll('input, select, textarea');
+                                        if (inputs.length >= 8) {
+                                            inputs[0].value = detail.developer || '';
+                                            inputs[1].value = detail.objectType || '';
+                                            inputs[2].value = detail.objectName || '';
+                                            inputs[3].value = detail.changeType || '';
+                                            inputs[4].value = detail.columnName || '';
+                                            inputs[5].value = detail.description || '';
+                                            inputs[6].value = detail.gitLink || '';
+                                            inputs[7].value = detail.jiraId || '';
+                                        }
+                                    }
+                                });
+                            }
+                            updateRowNumbers(); // Recalculate row numbers and update count
+
+                            // Restore "Production Checkpoints" details
+                            const checkpointRows = document.querySelectorAll('#checkpointTable tbody tr');
+                            if (data.checkpoints && Array.isArray(data.checkpoints) && data.checkpoints.length === checkpointRows.length) {
+                                checkpointRows.forEach((row, index) => {
+                                    const checkpoint = data.checkpoints[index];
+                                    const checkbox = row.querySelector('.checkpoint-checkbox');
+                                    const statusSelect = row.querySelector('.checkpoint-status');
+                                    const verifiedByInput = row.querySelector('.checkpoint-verified-by');
+                                    const commentsInput = row.querySelector('.checkpoint-comments');
+
+                                    if (checkbox) checkbox.checked = checkpoint.checked;
+                                    if (statusSelect) statusSelect.value = checkpoint.status || 'Pending';
+                                    if (verifiedByInput) verifiedByInput.value = checkpoint.verifiedBy || '';
+                                    if (commentsInput) commentsInput.value = checkpoint.comments || '';
+                                });
+                            }
+
+                            // Restore "Sign-off" details
+                            const signoffRows = document.querySelectorAll('#signoffTable tbody tr');
+                            if (data.signoffs && Array.isArray(data.signoffs) && data.signoffs.length === signoffRows.length) {
+                                signoffRows.forEach((row, index) => {
+                                    const signoff = data.signoffs[index];
+                                    const nameInput = row.querySelector('.signoff-name');
+                                    const dateInput = row.querySelector('.signoff-date');
+                                    const signatureInput = row.querySelector('.signoff-signature');
+
+                                    if (nameInput) nameInput.value = signoff.name || '';
+                                    if (dateInput) dateInput.value = signoff.date || '';
+                                    if (signatureInput) signatureInput.value = signoff.signature || '';
+                                });
+                            }
+
+                            console.log('Data restored from previous session.');
+                        } catch (e) {
+                            console.error("Error loading data from localStorage:", e);
+                            showMessage('Failed to load saved data due to a parsing error. Data might be corrupted. Clearing saved data.', 'alert');
+                            localStorage.removeItem('fhirImplementationPlan'); // Clear corrupted data to prevent future errors
+                        }
+                    } else {
+                        console.log('User chose not to restore data.');
+                    }
+                });
+            }
+        }
+        
+        /**
+         * Triggers the browser's print dialog to print the document.
+         */
+        function printDocument() {
+            showMessage('Opening print dialog. Please ensure your printer is ready.', 'alert');
+            window.print();
+        }
+        
+        /**
+         * Enables automatic saving of form data at a set interval.
+         */
+        function enableAutoSave() {
+            // Auto-save every 5 minutes (300000 milliseconds)
+            autoSaveInterval = setInterval(() => {
+                saveData();
+                console.log('Auto-saved at', new Date().toLocaleTimeString());
+            }, 300000); 
+        }
+        
+        /**
+         * Initializes the page after the DOM is fully loaded.
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData(); // Attempt to load saved data
+            enableAutoSave(); // Start auto-save
+            
+            // Add event listeners for real-time validation on blur for required fields
+            const editableElements = document.querySelectorAll('.editable');
+            editableElements.forEach(field => {
+                // Check if the field's associated label indicates it's required (has an asterisk)
+                const label = field.closest('.form-group')?.querySelector('label');
+                if (label && label.textContent.includes('*')) {
+                    field.addEventListener('blur', validateField);
+                }
+            });
+
+            // Initial update for sub-resource placeholder based on the default or loaded selection
+            updateSubResources();
+        });
+        
+        /**
+         * Validates a form field, highlighting it if it's required and empty.
+         * @param {Event} event - The event object from the blur event.
+         */
+        function validateField(event) {
+            const field = event.target;
+            const label = field.closest('.form-group')?.querySelector('label');
+            
+            if (label && label.textContent.includes('*')) {
+                if (!field.value.trim()) { // Use .trim() to check for actual content
+                    field.style.borderColor = '#e74c3c';
+                    field.style.boxShadow = '0 0 0 3px rgba(231, 76, 60, 0.1)';
+                } else {
+                    field.style.borderColor = '#ddd';
+                    field.style.boxShadow = 'none';
+                }
+            }
+        }
+        
+        /**
+         * Cleans up the auto-save interval when the page is about to be unloaded.
+         */
+        window.addEventListener('beforeunload', () => {
+            if (autoSaveInterval) {
+                clearInterval(autoSaveInterval);
+            }
+        });
+    </script>
+</body>
+</html>
